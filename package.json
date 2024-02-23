@@ -12,13 +12,14 @@
     "keywords": [],
     "license": "ISC",
     "devDependencies": {
-        "nodemon": "^2.0.16",
-        "typescript": "^5.3.3",
         "@types/dotenv": "^8.2.0",
         "@types/node": "^20.3.3",
         "@types/uuid": "^9.0.2",
+        "@types/ws": "^8.5.10",
+        "nodemon": "^2.0.16",
         "ts-node": "^10.9.1",
-        "ts-node-dev": "^2.0.0"
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.3.3"
     },
     "dependencies": {
         "ws": "^8.8.0"
