@@ -7,10 +7,15 @@ export interface User {
     password: string;
 }
 
+export interface Winner {
+    name: string;
+    wins: number;
+}
+
 export class UsersDatabase {
     private static instance: UsersDatabase | null = null;
     private users: User[] = [];
-    private winners: User[] = [];
+    private winners: Winner[] = [{ name: 'test', wins: 0}];
 
     private constructor() {}
 
@@ -48,5 +53,18 @@ export class UsersDatabase {
         } else {
             return this.addUser(userData);
         }
+    }
+
+    addWinners(name: string) {
+        const winner = this.winners.find(winner => winner.name === name);
+        if(winner) {
+            winner.wins++;
+        } else {
+            this.winners.push({ name, wins: 1 });
+        }
+    }
+
+    getWinners() {
+        return this.winners;
     }
 }

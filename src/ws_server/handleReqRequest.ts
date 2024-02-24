@@ -3,7 +3,8 @@ import { Message, RegRequestData } from './common/interfaces';
 import { UsersDatabase } from './common/UsersDatabase';
 
 export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
-  const userInDatabase = UsersDatabase.getInstance().checkUser(reqData);
+  const userDatabase = UsersDatabase.getInstance();
+  const userInDatabase = userDatabase.checkUser(reqData);
   let data: {
     name: string;
     index: number | string;
@@ -31,6 +32,13 @@ export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
   });
 
   ws.send(regResponseMessage);
+
+  const winnersString = JSON.stringify(userDatabase.getWinners());
+  const winnersRes = JSON.stringify({
+    type: 'update_winners',
+    data: winnersString,
+  })
+  ws.send(winnersRes)
 
   console.log('Sent message:', regResponseMessage);
 }
