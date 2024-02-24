@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import handleRequest from './handleRequest';
 
 export default function startWebSocketServer(port: number) {
     const wss = new WebSocket.Server({ port });
@@ -9,20 +10,26 @@ export default function startWebSocketServer(port: number) {
             try {
                 const parsedMessage = JSON.parse(messageString);
                 console.log('Received message:', parsedMessage);
+                handleRequest(parsedMessage, ws);
             } catch (error) {
                 console.error('Error parsing message:', error);
             }
         })
 
-        ws.onclose = (event) => {
-            console.log('WebSocket server closed');
-        };
-    })
-
-
-    process.on('SIGINT', () => {
-        wss.close(() => {
-            process.exit(0);
+        ws.on('close', function close() {
+            console.log('WebSocket connection closed');
         });
     })
+
+
+    process.on('SIGINT', function() {
+        console.log('Shutting down WebSocket server...');
+        wss.clients.forEach(function(client) {
+            client.terminate();
+        });
+        wss.close(function() {
+            console.log('WebSocket server closed');
+            process.exit();
+        });
+    });
 }
