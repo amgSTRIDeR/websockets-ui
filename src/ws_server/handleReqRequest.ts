@@ -49,5 +49,7 @@ export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
   showResMessage(winnersResponseObject)
   ws.send(winnersRes)
 
-  showResMessage(reqResponseObject)
+  showResMessage(reqResponseObject);
+
+  return {name: data.name, index: data.index};
 }

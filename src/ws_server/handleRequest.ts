@@ -4,9 +4,10 @@ import { handleReqRequest } from "./handleReqRequest";
 
 export default function handleRequest(message: Message, ws: WebSocket) {
   const messageData = JSON.parse(message.data) as RegRequestData;
+  let currentUser: { name: string; index: number | string } | undefined;
   switch (message.type) {
     case 'reg':
-      handleReqRequest(messageData, ws);
+      currentUser = handleReqRequest(messageData, ws);
       break;
   }
 }
