@@ -1,9 +1,10 @@
 import { WebSocket } from 'ws';
-import { Message, RegRequestData } from './common/interfaces';
-import { UsersDatabase } from './common/UsersDatabase';
+import { RegRequestData } from './common/interfaces';
+import { GameDatabase } from './common/GameDatabase';
+import { showResMessage } from './common/consoleMessages';
 
 export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
-  const userDatabase = UsersDatabase.getInstance();
+  const userDatabase = GameDatabase.getInstance();
   const userInDatabase = userDatabase.checkUser(reqData);
   let data: {
     name: string;
@@ -26,19 +27,27 @@ export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
       errorText: 'Password is incorrect',
     };
   }
-  const regResponseMessage = JSON.stringify({
+
+  const reqResponseObject = {
     type: 'reg',
     data: JSON.stringify(data),
-  });
+    id: 0
+  }
+  
+  const regResponseMessage = JSON.stringify(reqResponseObject);
+
 
   ws.send(regResponseMessage);
 
   const winnersString = JSON.stringify(userDatabase.getWinners());
-  const winnersRes = JSON.stringify({
+  const winnersResponseObject = {
     type: 'update_winners',
     data: winnersString,
-  })
+    id: 0
+  }
+  const winnersRes = JSON.stringify(winnersResponseObject)
+  showResMessage(winnersResponseObject)
   ws.send(winnersRes)
 
-  console.log('Sent message:', regResponseMessage);
+  showResMessage(reqResponseObject)
 }

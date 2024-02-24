@@ -12,8 +12,8 @@ export interface Winner {
     wins: number;
 }
 
-export class UsersDatabase {
-    private static instance: UsersDatabase | null = null;
+export class GameDatabase {
+    private static instance: GameDatabase | null = null;
     private users: User[] = [];
     private winners: Winner[] = [{ name: 'test', wins: 0}];
 
@@ -21,7 +21,7 @@ export class UsersDatabase {
 
     static getInstance() {
         if (this.instance === null) {
-            this.instance = new UsersDatabase();
+            this.instance = new GameDatabase();
         }
         return this.instance;
     }

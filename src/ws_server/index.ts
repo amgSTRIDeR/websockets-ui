@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import handleRequest from './handleRequest';
+import { showReqMessage } from './common/consoleMessages';
 
 export default function startWebSocketServer(port: number) {
     const wss = new WebSocket.Server({ port });
@@ -7,10 +8,10 @@ export default function startWebSocketServer(port: number) {
     wss.on('connection', function connection(ws) {
         ws.on('message', function incoming(message) {
             const messageString = message.toString();
+            const messageObject = JSON.parse(messageString);
+            showReqMessage(messageObject);
             try {
-                const parsedMessage = JSON.parse(messageString);
-                console.log('Received message:', parsedMessage);
-                handleRequest(parsedMessage, ws);
+                handleRequest(messageObject, ws);
             } catch (error) {
                 console.error('Error parsing message:', error);
             }
