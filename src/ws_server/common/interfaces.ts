@@ -1,15 +1,12 @@
-interface Message {
+export interface Message {
   type: string;
   data: any;
   id: 0;
 }
 
-export interface RegRequestMessage extends Message {
-  type: 'reg';
-  data: {
+export interface RegRequestData {
     name: string;
     password: string;
-  };
 }
 
 export interface RegResponseMessage extends Message {
