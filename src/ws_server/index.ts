@@ -8,12 +8,12 @@ import { EventEmitter } from 'stream';
 const gameDatabase = GameDatabase.getInstance();
 
 class Player extends EventEmitter {
-    constructor(public name: string, public password: string, public index: string | number) {
+    constructor(public name: string, public password: string, public index: string | number, public ws: WebSocket) {
         super();
     }
 
-    sendCreateRoomResponse() {
-
+    sendCreateRoomResponse(response: string) {
+        this.ws.send(response);
     }
 }
 
@@ -21,7 +21,7 @@ export default function startWebSocketServer(port: number) {
     const wss = new WebSocket.Server({ port });
     
     wss.on('connection', function connection(ws) {
-        const player = new Player('', '', '');
+        const player = new Player('', '', '', ws);
         gameDatabase.on('update_rooms', updateRooms.bind(null, ws));
         ws.on('message', function incoming(message) {
             const messageString = message.toString();

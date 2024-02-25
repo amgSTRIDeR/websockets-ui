@@ -20,7 +20,7 @@ export interface Winner {
 
 export interface Room {
   roomId: number | string;
-  roomUsers: CurrentUser[];
+  roomUsers: Player[];
 }
 
 export class GameDatabase extends EventEmitter {
@@ -126,7 +126,7 @@ export class GameDatabase extends EventEmitter {
 
       if (this.rooms[roomIndex].roomUsers.length < 2) {
         this.rooms[roomIndex].roomUsers.push(player);
-        this.createGame(this.rooms[roomIndex], ws);
+        this.createGame(this.rooms[roomIndex]);
         this.emit('update_rooms');
       } else {
         showInfoMessage('Room is full');
@@ -136,35 +136,30 @@ export class GameDatabase extends EventEmitter {
     }
   }
 
-  createGame(room: Room, ws: WebSocket) {
+  createGame(room: Room) {
     const idGame = crypto.randomBytes(16).toString('hex');
     const idPlayer1 = crypto.randomBytes(16).toString('hex');
     const idPlayer2 = crypto.randomBytes(16).toString('hex');
     const game = {
       idGame,
-      idPlayer1,
-      idPlayer2,
+      player1: {id: idPlayer1, player: room.roomUsers[0]},
+      player2: {id: idPlayer2, player: room.roomUsers[1]},
     };
     this.games.push(game);
 
     const response1 = {
       type: 'create_game',
-      data: JSON.stringify(game),
+      data: JSON.stringify({idGame, idPlayer: game.player1.id}),
       id: 0,
     };
 
     const response2 = {
       type: 'create_game',
-      data: JSON.stringify(game),
+      data: JSON.stringify({idGame, idPlayer: game.player2.id}),
       id: 0,
     };
-    
-    room.roomUsers.forEach((user) => {
-      if (user.index === idPlayer1) {
-        ws.send(JSON.stringify(response1));
-      } else {
-        ws.send(JSON.stringify(response2));
-      }
-    });
+
+    game.player1.player.sendCreateRoomResponse(JSON.stringify(response1));
+    game.player2.player.sendCreateRoomResponse(JSON.stringify(response2));
   }
 }

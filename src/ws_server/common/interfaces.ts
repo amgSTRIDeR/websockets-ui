@@ -1,3 +1,5 @@
+import { WebSocket } from "ws";
+
 export interface Message {
   type: string;
   data: any;
@@ -166,4 +168,6 @@ export interface Player {
   name: string;
   password: string;
   index: string | number;
+  ws: WebSocket;
+  sendCreateRoomResponse(response: string): void;
 }
