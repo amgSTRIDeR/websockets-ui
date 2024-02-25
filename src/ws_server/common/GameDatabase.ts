@@ -1,8 +1,9 @@
 import crypto from 'crypto';
-import { Player, RegRequestData } from './interfaces';
+import { AddShipsData, RegRequestData } from './interfaces';
 import { showInfoMessage } from './consoleMessages';
 import { EventEmitter } from 'stream';
 import { WebSocket } from 'ws';
+import { PlayerInterface } from '..';
 
 export interface CurrentUser {
   name: string;
@@ -20,12 +21,12 @@ export interface Winner {
 
 export interface Room {
   roomId: number | string;
-  roomUsers: Player[];
+  roomUsers: PlayerInterface[];
 }
 
 export class GameDatabase extends EventEmitter {
   private static instance: GameDatabase | null = null;
-  private users: Player[] = [];
+  private users: PlayerInterface[] = [];
   private winners: Winner[] = [{ name: 'test', wins: 0 }];
   private rooms: Room[] = [];
   private games: any[] = [];
@@ -40,7 +41,7 @@ export class GameDatabase extends EventEmitter {
     return this.instance;
   }
 
-  addUser(player: Player) {
+  addUser(player: PlayerInterface) {
     console.log('addUser', player)
     const index = crypto.randomBytes(16).toString('hex');
     player.index = index;
@@ -57,7 +58,7 @@ export class GameDatabase extends EventEmitter {
     }
   }
 
-  checkUser(userData: RegRequestData, player: Player) {
+  checkUser(userData: RegRequestData, player: PlayerInterface) {
     const userInDatabase = this.findUserInDatabase(userData.name);
     if (userInDatabase) {
       if (userInDatabase.password === userData.password) {
@@ -86,7 +87,7 @@ export class GameDatabase extends EventEmitter {
     return this.winners;
   }
 
-  createRoom(player: Player) {
+  createRoom(player: PlayerInterface) {
     if (
       this.rooms.some((room) =>
         room.roomUsers.some((roomUser) => roomUser === player)
@@ -116,7 +117,7 @@ export class GameDatabase extends EventEmitter {
     return response;
   }
 
-  addUserToRoom(player: Player, indexRoom: number | string, ws: WebSocket) {
+  addUserToRoom(player: PlayerInterface, indexRoom: number | string, ws: WebSocket) {
     const roomIndex = this.rooms.findIndex((room) => room.roomId === indexRoom);
     if (roomIndex !== -1) {
       if(this.rooms[roomIndex].roomUsers.some((roomUser) => roomUser === player)) {
@@ -159,7 +160,39 @@ export class GameDatabase extends EventEmitter {
       id: 0,
     };
 
-    game.player1.player.sendCreateRoomResponse(JSON.stringify(response1));
-    game.player2.player.sendCreateRoomResponse(JSON.stringify(response2));
+    game.player1.player.sendResponse(response1);
+    game.player2.player.sendResponse(response2);
+  }
+
+  addShips(data: AddShipsData) {
+    const gameIndex = this.games.findIndex((game) => game.idGame === data.gameId);
+    if (gameIndex !== -1) {
+      if (this.games[gameIndex].player1.id === data.indexPlayer) {
+        this.games[gameIndex].player1.ships = data.ships;
+      } else {
+        this.games[gameIndex].player2.ships = data.ships;
+      }
+
+      if (this.games[gameIndex].player1.ships && this.games[gameIndex].player2.ships) {
+        this.startGame(this.games[gameIndex]);
+      }
+    }
+  }
+
+  startGame(game: any) {
+    const response1 = {
+      type: 'start_game',
+      data: JSON.stringify(game.player2.ships),
+      id: 0,
+    };
+
+    const response2 = {
+      type: 'start_game',
+      data: JSON.stringify(game.player1.ships),
+      id: 0,
+    };
+
+    game.player1.player.sendResponse(response1);
+    game.player2.player.sendResponse(response2);
   }
 }

@@ -67,26 +67,27 @@ export interface UpdateRoomStateResponseMessage extends Message {
     }
   ];
 }
+export interface AddShipsData {
+  gameId: number | string;
+  ships: [
+    {
+      position: {
+        x: number;
+        y: number;
+      };
+      direction: boolean;
+      length: number;
+      type: 'small' | 'medium' | 'large' | 'huge';
+    }
+  ];
+  indexPlayer:
+    | number
+    | string /* id of the player in the current game session */;
+}
 
 export interface AddShipsRequestMessage extends Message {
   type: 'add_ships';
-  data: {
-    gameId: number | string;
-    ships: [
-      {
-        position: {
-          x: number;
-          y: number;
-        };
-        direction: boolean;
-        length: number;
-        type: 'small' | 'medium' | 'large' | 'huge';
-      }
-    ];
-    indexPlayer:
-      | number
-      | string /* id of the player in the current game session */;
-  };
+  data: AddShipsData;
 }
 
 export interface StartGameResponseMessage extends Message {
@@ -164,10 +165,4 @@ export interface FinishGameResponseMessage extends Message {
   };
 }
 
-export interface Player {
-  name: string;
-  password: string;
-  index: string | number;
-  ws: WebSocket;
-  sendCreateRoomResponse(response: string): void;
-}
+

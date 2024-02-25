@@ -1,19 +1,20 @@
 import { WebSocket } from 'ws';
 import {
+  AddShipsData,
   AddUserToRoomData,
   Message,
-  Player,
   RegRequestData,
 } from './common/interfaces';
 import { handleReqRequest } from './handleReqRequest';
 import { GameDatabase } from './common/GameDatabase';
+import { PlayerInterface } from '.';
 
 const gameDatabase = GameDatabase.getInstance();
 
 export default function handleRequest(
   message: Message,
   ws: WebSocket,
-  player: Player
+  player: PlayerInterface
 ) {
   switch (message.type) {
     case 'reg':
@@ -26,6 +27,9 @@ export default function handleRequest(
       gameDatabase.addUserToRoom(
         player,
         (<AddUserToRoomData>JSON.parse(message.data)).indexRoom, ws);
+      break;
+    case 'add_ships':
+      gameDatabase.addShips(<AddShipsData>JSON.parse(message.data));
       break;
   }
 }

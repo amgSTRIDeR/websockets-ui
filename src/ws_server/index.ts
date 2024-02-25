@@ -1,19 +1,28 @@
 import WebSocket from 'ws';
 import handleRequest from './handleRequest';
-import { showReqMessage } from './common/consoleMessages';
+import { showReqMessage, showResMessage } from './common/consoleMessages';
 import { GameDatabase } from './common/GameDatabase';
 import { updateRooms } from './updateRooms';
 import { EventEmitter } from 'stream';
 
 const gameDatabase = GameDatabase.getInstance();
 
+export interface PlayerInterface {
+  name: string;
+  password: string;
+  index: string | number;
+  ws: WebSocket;
+  sendResponse(response: object): void;
+}
+
 class Player extends EventEmitter {
     constructor(public name: string, public password: string, public index: string | number, public ws: WebSocket) {
         super();
     }
 
-    sendCreateRoomResponse(response: string) {
-        this.ws.send(response);
+    sendResponse(response: object) {
+        showResMessage(response);
+        this.ws.send(JSON.stringify(response));
     }
 }
 
