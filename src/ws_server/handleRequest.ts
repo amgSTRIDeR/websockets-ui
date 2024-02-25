@@ -1,8 +1,9 @@
 import { WebSocket } from "ws";
 import { Message, RegRequestData } from "./common/interfaces";
 import { handleReqRequest } from "./handleReqRequest";
-import { handleCreateRoomReq } from "./handleCreateRoomReq";
-import { CurrentUser } from "./common/GameDatabase";
+import { CurrentUser, GameDatabase } from "./common/GameDatabase";
+
+const gameDatabase = GameDatabase.getInstance();
 
 export default function handleRequest(message: Message, ws: WebSocket, currentUser: CurrentUser) {
   const messageData = message.data.length ? JSON.parse(message.data) as RegRequestData : {} as RegRequestData;
@@ -10,7 +11,7 @@ export default function handleRequest(message: Message, ws: WebSocket, currentUs
     case 'reg':
       return handleReqRequest(messageData, ws);
     case 'create_room':
-      handleCreateRoomReq(ws, currentUser);
+      gameDatabase.createRoom(currentUser);
       break;
   }
 }
