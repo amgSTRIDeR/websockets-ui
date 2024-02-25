@@ -1,9 +1,12 @@
 import crypto from 'crypto';
 import { RegRequestData } from './interfaces';
 
-export interface User {
-    index: number | string;
+export interface CurrentUser {
     name: string;
+    index: number | string;
+}
+
+export interface User extends CurrentUser {
     password: string;
 }
 
@@ -12,11 +15,17 @@ export interface Winner {
     wins: number;
 }
 
+
+export interface Room {
+    roomId: number | string,
+    roomUsers: CurrentUser[],
+}
+
 export class GameDatabase {
     private static instance: GameDatabase | null = null;
     private users: User[] = [];
     private winners: Winner[] = [{ name: 'test', wins: 0}];
-
+    private rooms: Room[] = [];
     private constructor() {}
 
     static getInstance() {
@@ -66,5 +75,25 @@ export class GameDatabase {
 
     getWinners() {
         return this.winners;
+    }
+
+    createRoom(user: CurrentUser) {
+        const roomId = crypto.randomBytes(16).toString('hex');
+        const room = {
+            roomId,
+            roomUsers: [user],
+        }
+        this.rooms.push(room);
+        return room;
+    }
+
+    getAvailableRoomsRes() {
+        const availableRooms = this.rooms.filter(room => room.roomUsers.length !== 0);
+        const response = {
+            type: 'update_room',
+            data: JSON.stringify(availableRooms),
+            id: 0,
+        }
+        return response;
     }
 }

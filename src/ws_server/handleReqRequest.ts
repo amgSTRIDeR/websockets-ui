@@ -4,8 +4,8 @@ import { GameDatabase } from './common/GameDatabase';
 import { showResMessage } from './common/consoleMessages';
 
 export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
-  const userDatabase = GameDatabase.getInstance();
-  const userInDatabase = userDatabase.checkUser(reqData);
+  const gameDatabase = GameDatabase.getInstance();
+  const userInDatabase = gameDatabase.checkUser(reqData);
   let data: {
     name: string;
     index: number | string;
@@ -31,25 +31,28 @@ export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
   const reqResponseObject = {
     type: 'reg',
     data: JSON.stringify(data),
-    id: 0
-  }
-  
-  const regResponseMessage = JSON.stringify(reqResponseObject);
+    id: 0,
+  };
 
+  const regResponseMessage = JSON.stringify(reqResponseObject);
 
   ws.send(regResponseMessage);
 
-  const winnersString = JSON.stringify(userDatabase.getWinners());
+  const winnersString = JSON.stringify(gameDatabase.getWinners());
   const winnersResponseObject = {
     type: 'update_winners',
     data: winnersString,
-    id: 0
-  }
-  const winnersRes = JSON.stringify(winnersResponseObject)
-  showResMessage(winnersResponseObject)
-  ws.send(winnersRes)
+    id: 0,
+  };
+  const winnersRes = JSON.stringify(winnersResponseObject);
+  showResMessage(winnersResponseObject);
+  ws.send(winnersRes);
 
   showResMessage(reqResponseObject);
 
-  return {name: data.name, index: data.index};
+  const availableRoomsObj = gameDatabase.getAvailableRoomsRes();
+  showResMessage(availableRoomsObj);
+  ws.send(JSON.stringify(availableRoomsObj));
+
+  return { name: data.name, index: data.index };
 }

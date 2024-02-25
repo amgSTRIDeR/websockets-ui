@@ -1,9 +1,11 @@
 import WebSocket from 'ws';
 import handleRequest from './handleRequest';
 import { showReqMessage } from './common/consoleMessages';
+import { CurrentUser } from './common/GameDatabase';
 
 export default function startWebSocketServer(port: number) {
     const wss = new WebSocket.Server({ port });
+    let currentUser: CurrentUser = { name: '', index: '' };
 
     wss.on('connection', function connection(ws) {
         ws.on('message', function incoming(message) {
@@ -11,7 +13,7 @@ export default function startWebSocketServer(port: number) {
             const messageObject = JSON.parse(messageString);
             showReqMessage(messageObject);
             try {
-                handleRequest(messageObject, ws);
+               currentUser = handleRequest(messageObject, ws, currentUser) ?? currentUser;
             } catch (error) {
                 console.error('Error parsing message:', error);
             }
