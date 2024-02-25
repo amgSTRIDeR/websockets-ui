@@ -1,5 +1,6 @@
 import { WebSocket } from 'ws';
 import {
+  AddUserToRoomData,
   AddUserToRoomRequestMessage,
   Message,
   RegRequestData,
@@ -21,10 +22,10 @@ export default function handleRequest(
       gameDatabase.createRoom(currentUser);
       break;
     case 'add_user_to_room':
-      // gameDatabase.addUserToRoom(
-      //   currentUser,
-      //   <AddUserToRoomRequestMessage>message.data.indexRoom
-      // );
+      console.log('add_user_to_room', message);
+      gameDatabase.addUserToRoom(
+        currentUser,
+        (<AddUserToRoomData>JSON.parse(message.data)).indexRoom);
       break;
   }
 }
