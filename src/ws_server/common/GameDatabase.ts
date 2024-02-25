@@ -110,7 +110,7 @@ export class GameDatabase extends EventEmitter {
     );
     const response = {
       type: 'update_room',
-      data: JSON.stringify(availableRooms),
+      data: availableRooms,
       id: 0,
     };
     return response;
