@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { RegRequestData } from './interfaces';
 import { showInfoMessage } from './consoleMessages';
+import { EventEmitter } from 'stream';
 
 export interface CurrentUser {
     name: string;
@@ -22,12 +23,14 @@ export interface Room {
     roomUsers: CurrentUser[],
 }
 
-export class GameDatabase {
+export class GameDatabase extends EventEmitter {
     private static instance: GameDatabase | null = null;
     private users: User[] = [];
     private winners: Winner[] = [{ name: 'test', wins: 0}];
     private rooms: Room[] = [];
-    private constructor() {}
+    private constructor() {
+        super();
+    }
 
     static getInstance() {
         if (this.instance === null) {
@@ -89,6 +92,7 @@ export class GameDatabase {
             roomUsers: [user],
         }
         this.rooms.push(room);
+        this.emit('update_rooms');
     }
 
     getAvailableRoomsRes() {

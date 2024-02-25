@@ -2,9 +2,11 @@ import { WebSocket } from 'ws';
 import { RegRequestData } from './common/interfaces';
 import { GameDatabase } from './common/GameDatabase';
 import { showResMessage } from './common/consoleMessages';
+import { updateRooms } from './updateRooms';
+
+const gameDatabase = GameDatabase.getInstance();
 
 export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
-  const gameDatabase = GameDatabase.getInstance();
   const userInDatabase = gameDatabase.checkUser(reqData);
   let data: {
     name: string;
@@ -50,9 +52,7 @@ export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
 
   showResMessage(reqResponseObject);
 
-  const availableRoomsObj = gameDatabase.getAvailableRoomsRes();
-  showResMessage(availableRoomsObj);
-  ws.send(JSON.stringify(availableRoomsObj));
+  updateRooms(ws);
 
   return { name: data.name, index: data.index };
 }
