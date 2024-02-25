@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { RegRequestData } from './interfaces';
+import { showInfoMessage } from './consoleMessages';
 
 export interface CurrentUser {
     name: string;
@@ -78,17 +79,20 @@ export class GameDatabase {
     }
 
     createRoom(user: CurrentUser) {
+        if(this.rooms.some(room => room.roomUsers.some(roomUser => roomUser.name === user.name))) {
+            showInfoMessage('User already in room');
+            return;
+        }
         const roomId = crypto.randomBytes(16).toString('hex');
         const room = {
             roomId,
             roomUsers: [user],
         }
         this.rooms.push(room);
-        return room;
     }
 
     getAvailableRoomsRes() {
-        const availableRooms = this.rooms.filter(room => room.roomUsers.length !== 0);
+        const availableRooms = this.rooms.filter(room => room.roomUsers.length === 1);
         const response = {
             type: 'update_room',
             data: JSON.stringify(availableRooms),

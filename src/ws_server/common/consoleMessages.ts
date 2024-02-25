@@ -1,5 +1,9 @@
 import colors from "./colors";
 
+export function showInfoMessage(message: string) {
+    console.log(`${colors.yellow}${message}${colors.reset}`);
+}
+
 export function showReqMessage(message: object) {
     console.log(`${colors.cyan}Message received <= ${colors.reset}`);
     console.log(message);
