@@ -34,12 +34,15 @@ export interface CreateRoomRequestMessage extends Message {
   data: '';
 }
 
+export interface AddUserToRoomData {
+    indexRoom: number | string;
+}
+
 export interface AddUserToRoomRequestMessage extends Message {
   type: 'add_user_to_room';
-  data: {
-    indexRoom: number | string;
-  };
+  data: AddUserToRoomData;
 }
+
 
 export interface CreateGameResponseMessage extends Message {
   type: 'create_game'; //send for both players in the room

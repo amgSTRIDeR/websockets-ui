@@ -41,7 +41,12 @@ export class GameDatabase extends EventEmitter {
 
     addUser(userData: RegRequestData) {
         const index = crypto.randomBytes(16).toString('hex');
-        const userInDatabase = Object.assign({ index }, userData);
+        const userInDatabase = {
+            name: userData.name,
+            password: userData.password,
+            index,
+        };
+
         this.users.push(userInDatabase);
         return userInDatabase;
     }
@@ -103,5 +108,19 @@ export class GameDatabase extends EventEmitter {
             id: 0,
         }
         return response;
+    }
+
+    addUserToRoom(user: CurrentUser, indexRoom: number | string) {
+        const room = this.rooms.find(room => room.roomId === indexRoom);
+        if(room) {
+            if(room.roomUsers.length < 2) {
+                room.roomUsers.push(user);
+                this.emit('update_rooms');
+            } else {
+                showInfoMessage('Room is full');
+            }
+        } else {
+            showInfoMessage('Room not found');
+        }
     }
 }
