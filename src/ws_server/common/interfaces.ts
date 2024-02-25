@@ -5,8 +5,8 @@ export interface Message {
 }
 
 export interface RegRequestData {
-    name: string;
-    password: string;
+  name: string;
+  password: string;
 }
 
 export interface RegResponseMessage extends Message {
@@ -35,14 +35,13 @@ export interface CreateRoomRequestMessage extends Message {
 }
 
 export interface AddUserToRoomData {
-    indexRoom: number | string;
+  indexRoom: number | string;
 }
 
 export interface AddUserToRoomRequestMessage extends Message {
   type: 'add_user_to_room';
   data: AddUserToRoomData;
 }
-
 
 export interface CreateGameResponseMessage extends Message {
   type: 'create_game'; //send for both players in the room
@@ -161,4 +160,10 @@ export interface FinishGameResponseMessage extends Message {
       | number
       | string /* id of the player in the current game session */;
   };
+}
+
+export interface Player {
+  name: string;
+  password: string;
+  index: string | number;
 }

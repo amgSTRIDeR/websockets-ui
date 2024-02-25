@@ -3,21 +3,28 @@ import handleRequest from './handleRequest';
 import { showReqMessage } from './common/consoleMessages';
 import { CurrentUser, GameDatabase } from './common/GameDatabase';
 import { updateRooms } from './updateRooms';
+import { EventEmitter } from 'stream';
 
 const gameDatabase = GameDatabase.getInstance();
+
+class Player extends EventEmitter {
+    constructor(public name: string, public password: string, public index: string | number) {
+        super();
+    }
+}
 
 export default function startWebSocketServer(port: number) {
     const wss = new WebSocket.Server({ port });
     
     wss.on('connection', function connection(ws) {
-        let currentUser: CurrentUser = { name: '', index: '' };
+        const player = new Player('', '', '');
         gameDatabase.on('update_rooms', updateRooms.bind(null, ws));
         ws.on('message', function incoming(message) {
             const messageString = message.toString();
             const messageObject = JSON.parse(messageString);
             showReqMessage(messageObject);
             try {
-               currentUser = handleRequest(messageObject, ws, currentUser) ?? currentUser;
+               handleRequest(messageObject, ws, player);
             } catch (error) {
                 console.error('Error parsing message:', error);
             }

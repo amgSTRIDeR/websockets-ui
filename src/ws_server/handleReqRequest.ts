@@ -1,13 +1,13 @@
 import { WebSocket } from 'ws';
-import { RegRequestData } from './common/interfaces';
+import { Player, RegRequestData } from './common/interfaces';
 import { GameDatabase } from './common/GameDatabase';
 import { showResMessage } from './common/consoleMessages';
 import { updateRooms } from './updateRooms';
 
 const gameDatabase = GameDatabase.getInstance();
 
-export function handleReqRequest(reqData: RegRequestData, ws: WebSocket) {
-  const userInDatabase = gameDatabase.checkUser(reqData);
+export function handleReqRequest(reqData: RegRequestData, ws: WebSocket, player: Player) {
+  const userInDatabase = gameDatabase.checkUser(reqData, player);
   let data: {
     name: string;
     index: number | string;
