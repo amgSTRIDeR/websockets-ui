@@ -25,7 +25,7 @@ export default function handleRequest(
     case 'add_user_to_room':
       gameDatabase.addUserToRoom(
         player,
-        (<AddUserToRoomData>JSON.parse(message.data)).indexRoom);
+        (<AddUserToRoomData>JSON.parse(message.data)).indexRoom, ws);
       break;
   }
 }

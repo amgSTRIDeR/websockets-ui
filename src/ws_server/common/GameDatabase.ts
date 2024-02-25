@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { Player, RegRequestData } from './interfaces';
 import { showInfoMessage } from './consoleMessages';
 import { EventEmitter } from 'stream';
+import { WebSocket } from 'ws';
 
 export interface CurrentUser {
   name: string;
@@ -27,6 +28,7 @@ export class GameDatabase extends EventEmitter {
   private users: Player[] = [];
   private winners: Winner[] = [{ name: 'test', wins: 0 }];
   private rooms: Room[] = [];
+  private games: any[] = [];
   private constructor() {
     super();
   }
@@ -114,16 +116,17 @@ export class GameDatabase extends EventEmitter {
     return response;
   }
 
-  addUserToRoom(player: Player, indexRoom: number | string) {
+  addUserToRoom(player: Player, indexRoom: number | string, ws: WebSocket) {
     const roomIndex = this.rooms.findIndex((room) => room.roomId === indexRoom);
     if (roomIndex !== -1) {
       if(this.rooms[roomIndex].roomUsers.some((roomUser) => roomUser === player)) {
         showInfoMessage('User already in room');
         return;
       }
-      
+
       if (this.rooms[roomIndex].roomUsers.length < 2) {
         this.rooms[roomIndex].roomUsers.push(player);
+        this.createGame(this.rooms[roomIndex], ws);
         this.emit('update_rooms');
       } else {
         showInfoMessage('Room is full');
@@ -131,5 +134,37 @@ export class GameDatabase extends EventEmitter {
     } else {
       showInfoMessage('Room not found');
     }
+  }
+
+  createGame(room: Room, ws: WebSocket) {
+    const idGame = crypto.randomBytes(16).toString('hex');
+    const idPlayer1 = crypto.randomBytes(16).toString('hex');
+    const idPlayer2 = crypto.randomBytes(16).toString('hex');
+    const game = {
+      idGame,
+      idPlayer1,
+      idPlayer2,
+    };
+    this.games.push(game);
+
+    const response1 = {
+      type: 'create_game',
+      data: JSON.stringify(game),
+      id: 0,
+    };
+
+    const response2 = {
+      type: 'create_game',
+      data: JSON.stringify(game),
+      id: 0,
+    };
+    
+    room.roomUsers.forEach((user) => {
+      if (user.index === idPlayer1) {
+        ws.send(JSON.stringify(response1));
+      } else {
+        ws.send(JSON.stringify(response2));
+      }
+    });
   }
 }

@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import handleRequest from './handleRequest';
 import { showReqMessage } from './common/consoleMessages';
-import { CurrentUser, GameDatabase } from './common/GameDatabase';
+import { GameDatabase } from './common/GameDatabase';
 import { updateRooms } from './updateRooms';
 import { EventEmitter } from 'stream';
 
@@ -10,6 +10,10 @@ const gameDatabase = GameDatabase.getInstance();
 class Player extends EventEmitter {
     constructor(public name: string, public password: string, public index: string | number) {
         super();
+    }
+
+    sendCreateRoomResponse() {
+
     }
 }
 
