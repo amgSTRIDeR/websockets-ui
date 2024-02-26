@@ -2,6 +2,7 @@ import { WebSocket } from 'ws';
 import {
   AddShipsData,
   AddUserToRoomData,
+  AttackData,
   Message,
   RegRequestData,
 } from './common/interfaces';
@@ -30,6 +31,9 @@ export default function handleRequest(
       break;
     case 'add_ships':
       gameDatabase.addShips(<AddShipsData>JSON.parse(message.data));
+      break;
+    case 'attack':
+      gameDatabase.attack(<AttackData>JSON.parse(message.data));
       break;
   }
 }

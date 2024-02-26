@@ -1,4 +1,4 @@
-import { WebSocket } from "ws";
+import { WebSocket } from 'ws';
 
 export interface Message {
   type: string;
@@ -90,37 +90,36 @@ export interface AddShipsRequestMessage extends Message {
   data: AddShipsData;
 }
 
+export interface Ships {
+  position: {
+    x: number;
+    y: number;
+  };
+  direction: boolean;
+  length: number;
+  type: 'small' | 'medium' | 'large' | 'huge';
+}
+
 export interface StartGameResponseMessage extends Message {
   type: 'start_game';
   data: {
-    ships: /* player's ships, not enemy's */
-    [
-      {
-        position: {
-          x: number;
-          y: number;
-        };
-        direction: boolean;
-        length: number;
-        type: 'small' | 'medium' | 'large' | 'huge';
-      }
-    ];
+    ships: Ships[];
     currentPlayerIndex: number | string;
   };
 }
 
+export interface AttackData {
+  gameId: number | string;
+  x: number;
+  y: number;
+  indexPlayer:
+    | number
+    | string /* id of the player in the current game session */;
+}
+
 export interface AttackRequestMessage extends Message {
   type: 'attack';
-  data: {
-    gameId: number | string;
-    position: {
-      x: number;
-      y: number;
-    };
-    indexPlayer:
-      | number
-      | string /* id of the player in the current game session */;
-  };
+  data: AttackData;
 }
 
 export interface AttackResponseMessage extends Message {
@@ -165,4 +164,17 @@ export interface FinishGameResponseMessage extends Message {
   };
 }
 
+export interface ShipOnField {
+  hp: number;
+  neighborCells: {x: number, y:number}[]
+}
+
+export interface FieldCell {
+  ship: ShipOnField | null;
+  hit: boolean;
+}
+
+export interface Field {
+  cells: FieldCell[][];
+}
 

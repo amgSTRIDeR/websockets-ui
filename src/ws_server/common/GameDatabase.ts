@@ -1,5 +1,12 @@
 import crypto from 'crypto';
-import { AddShipsData, RegRequestData } from './interfaces';
+import {
+  AddShipsData,
+  AttackData,
+  Field,
+  FieldCell,
+  RegRequestData,
+  Ships,
+} from './interfaces';
 import { showInfoMessage } from './consoleMessages';
 import { EventEmitter } from 'stream';
 import { WebSocket } from 'ws';
@@ -43,7 +50,6 @@ export class GameDatabase extends EventEmitter {
   }
 
   addUser(player: PlayerInterface) {
-    console.log('addUser', player);
     const index = crypto.randomBytes(16).toString('hex');
     player.index = index;
 
@@ -180,8 +186,10 @@ export class GameDatabase extends EventEmitter {
     if (gameIndex !== -1) {
       if (this.games[gameIndex].player1.id === data.indexPlayer) {
         this.games[gameIndex].player1.ships = data.ships;
+        this.games[gameIndex].player1.player.field = this.drawPlayersField(data.ships);
       } else {
         this.games[gameIndex].player2.ships = data.ships;
+        this.games[gameIndex].player2.player.field = this.drawPlayersField(data.ships);
       }
 
       if (
@@ -196,13 +204,19 @@ export class GameDatabase extends EventEmitter {
   startGame(game: any) {
     const response1 = {
       type: 'start_game',
-      data: JSON.stringify({ships: game.player1.ships, currentPlayerIndex: game.player1.id}),
+      data: JSON.stringify({
+        ships: game.player1.ships,
+        currentPlayerIndex: game.player1.id,
+      }),
       id: 0,
     };
 
     const response2 = {
       type: 'start_game',
-      data: JSON.stringify({ships: game.player2.ships, currentPlayerIndex: game.player2.id}),
+      data: JSON.stringify({
+        ships: game.player2.ships,
+        currentPlayerIndex: game.player2.id,
+      }),
       id: 0,
     };
 
@@ -222,7 +236,8 @@ export class GameDatabase extends EventEmitter {
   }
 
   switchTurn(game: any) {
-    game.playersTurn = game.playersTurn === game.player1.id ? game.player2.id : game.player1.id;
+    game.playersTurn =
+      game.playersTurn === game.player1.id ? game.player2.id : game.player1.id;
     this.sendTurnInfo(game);
   }
 
@@ -244,8 +259,127 @@ export class GameDatabase extends EventEmitter {
         this.finishGame(game.idGame, player);
       }
     });
-
   }
+
+  attack(data: AttackData) {
+    const game = this.games.find((game) => game.idGame === data.gameId);
+    if (game && game.playersTurn === data.indexPlayer) {
+      const enemyPlayer =
+        game.player1.player.index === data.indexPlayer
+          ? game.player2
+          : game.player1;
+      const isShipHit = this.isShipHit(enemyPlayer.ships, data);
+      if (isShipHit) {
+        this.finishGame(game.idGame);
+      }
+      this.switchTurn(game);
+
+      game.player1.player.sendResponse({
+        type: 'attack',
+        data: JSON.stringify({
+          position: {
+            x: data.x,
+            y: data.y,
+          },
+          currentPlayer: game.player1.playerId,
+          status: 'killed',
+        }),
+        id: 0,
+      });
+
+      game.player2.player.sendResponse({
+        type: 'attack',
+        data: JSON.stringify({
+          position: {
+            x: data.x,
+            y: data.y,
+          },
+          currentPlayer: game.player2.playerId,
+          status: 'killed',
+        }),
+        id: 0,
+      });
+    }
+    // if (gameIndex !== -1 && this.games[gameIndex].playersTurn === player.index) {
+    //   const game = this.games[gameIndex];
+    //   const enemyPlayer = game.player1.player === player ? 'player2' : 'player1';
+    //   this.isShipHit(this.games[gameIndex][enemyPlayer].ships, );
+    // }
+  }
+
+  isShipHit(ships: Ships[], position: { x: number; y: number }) {
+    return true;
+  }
+
+  drawPlayersField(ships: Ships[]) {
+    const field: Field = { cells: [] };
+
+    class ShipOnField {
+      constructor(
+        public hp: number,
+        public neighborCells: { x: number; y: number }[]
+      ) {}
+    }
+
+    for (let i = 0; i < 10; i++) {
+      const column: FieldCell[] = [];
+      for (let j = 0; j < 10; j++) {
+        column.push({ ship: null, hit: false });
+      }
+      field.cells.push(column);
+    }
+    ships.forEach((ship) => {
+      const shipOnField = new ShipOnField(ship.length, []);
+      for (let i = 0; i < ship.length; i++) {
+        if (ship.direction) {
+          const xPos = ship.position.x;
+          const yPos = ship.position.y + i;
+          (field.cells[xPos][yPos]).ship = shipOnField;
+          shipOnField.neighborCells =this.getNeighborsCells(xPos, yPos);
+        } else {
+          const xPos = ship.position.x + i;
+          const yPos = ship.position.y;
+          (field.cells[xPos][yPos]).ship = shipOnField;
+          shipOnField.neighborCells =this.getNeighborsCells(xPos, yPos);
+        }
+      }
+    });
+
+    return field;
+  }
+
+  getNeighborsCells(xPos: number, yPos: number) {
+    const neighborsCells = [];
+    for (let i = xPos - 1; i < xPos + 2; i++) {
+      for (let j = yPos - 1; j < yPos + 2; j++) {
+        if (i >= 0 && j >= 0 && i < 10 && j < 10) {
+          neighborsCells.push({ x: i, y: j });
+        }
+      }
+    }
+    return neighborsCells;
+  }
+
+  // isShipSunk(ships: Ships[], position: { x: number; y: number }) {
+  //   const shipIndex = ships.findIndex((ship) => {
+  //     if (ship.direction) {
+  //       return (
+  //         ship.position.x === position.x &&
+  //         ship.position.y <= position.y &&
+  //         ship.position.y + ship.length > position.y
+  //       );
+  //     } else {
+  //       return (
+  //         ship.position.y === position.y &&
+  //         ship.position.x <= position.x &&
+  //         ship.position.x + ship.length > position.x
+  //       );
+  //     }
+  //   });
+  //   if (shipIndex !== -1) {
+  //     ships.splice(shipIndex, 1);
+  //   }
+  // }
 
   finishGame(gameId: string, exitedPlayer?: PlayerInterface) {
     const gameIndex = this.games.findIndex((game) => game.idGame === gameId);
@@ -253,7 +387,8 @@ export class GameDatabase extends EventEmitter {
       let winnerId = '';
       let winnerName = '';
       if (exitedPlayer) {
-        const winner = this.games[gameIndex].player1.player === exitedPlayer
+        const winner =
+          this.games[gameIndex].player1.player === exitedPlayer
             ? this.games[gameIndex].player2
             : this.games[gameIndex].player1;
         winnerId = winner.id;
@@ -267,15 +402,15 @@ export class GameDatabase extends EventEmitter {
           winnerName = this.games[gameIndex].player1.player.name;
         }
       }
-        const response = {
-          type: 'finish',
-          data: JSON.stringify({ winPlayer: winnerId }),
-          id: 0,
-        };
-        this.games[gameIndex].player1.player.sendResponse(response);
-        this.games[gameIndex].player2.player.sendResponse(response);
-        this.games = this.games.filter((game) => game.idGame !== gameId);
-        this.updateWinners(winnerName);
+      const response = {
+        type: 'finish',
+        data: JSON.stringify({ winPlayer: winnerId }),
+        id: 0,
+      };
+      this.games[gameIndex].player1.player.sendResponse(response);
+      this.games[gameIndex].player2.player.sendResponse(response);
+      this.games = this.games.filter((game) => game.idGame !== gameId);
+      this.updateWinners(winnerName);
     }
   }
 }
