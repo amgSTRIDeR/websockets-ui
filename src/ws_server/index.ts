@@ -45,6 +45,7 @@ export default function startWebSocketServer(port: number) {
 
         ws.on('close', function close() {
             gameDatabase.removePlayer(player);
+            gameDatabase.removeListener('update_rooms', updateRooms.bind(null, ws));
             console.log('WebSocket connection closed');
         });
     })
