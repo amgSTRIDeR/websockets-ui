@@ -42,7 +42,7 @@ export class GameDatabase extends EventEmitter {
   }
 
   addUser(player: PlayerInterface) {
-    console.log('addUser', player)
+    console.log('addUser', player);
     const index = crypto.randomBytes(16).toString('hex');
     player.index = index;
 
@@ -117,10 +117,16 @@ export class GameDatabase extends EventEmitter {
     return response;
   }
 
-  addUserToRoom(player: PlayerInterface, indexRoom: number | string, ws: WebSocket) {
+  addUserToRoom(
+    player: PlayerInterface,
+    indexRoom: number | string,
+    ws: WebSocket
+  ) {
     const roomIndex = this.rooms.findIndex((room) => room.roomId === indexRoom);
     if (roomIndex !== -1) {
-      if(this.rooms[roomIndex].roomUsers.some((roomUser) => roomUser === player)) {
+      if (
+        this.rooms[roomIndex].roomUsers.some((roomUser) => roomUser === player)
+      ) {
         showInfoMessage('User already in room');
         return;
       }
@@ -143,20 +149,20 @@ export class GameDatabase extends EventEmitter {
     const idPlayer2 = crypto.randomBytes(16).toString('hex');
     const game = {
       idGame,
-      player1: {id: idPlayer1, player: room.roomUsers[0]},
-      player2: {id: idPlayer2, player: room.roomUsers[1]},
+      player1: { id: idPlayer1, player: room.roomUsers[0] },
+      player2: { id: idPlayer2, player: room.roomUsers[1] },
     };
     this.games.push(game);
 
     const response1 = {
       type: 'create_game',
-      data: JSON.stringify({idGame, idPlayer: game.player1.id}),
+      data: JSON.stringify({ idGame, idPlayer: game.player1.id }),
       id: 0,
     };
 
     const response2 = {
       type: 'create_game',
-      data: JSON.stringify({idGame, idPlayer: game.player2.id}),
+      data: JSON.stringify({ idGame, idPlayer: game.player2.id }),
       id: 0,
     };
 
@@ -165,7 +171,9 @@ export class GameDatabase extends EventEmitter {
   }
 
   addShips(data: AddShipsData) {
-    const gameIndex = this.games.findIndex((game) => game.idGame === data.gameId);
+    const gameIndex = this.games.findIndex(
+      (game) => game.idGame === data.gameId
+    );
     if (gameIndex !== -1) {
       if (this.games[gameIndex].player1.id === data.indexPlayer) {
         this.games[gameIndex].player1.ships = data.ships;
@@ -173,7 +181,10 @@ export class GameDatabase extends EventEmitter {
         this.games[gameIndex].player2.ships = data.ships;
       }
 
-      if (this.games[gameIndex].player1.ships && this.games[gameIndex].player2.ships) {
+      if (
+        this.games[gameIndex].player1.ships &&
+        this.games[gameIndex].player2.ships
+      ) {
         this.startGame(this.games[gameIndex]);
       }
     }
@@ -194,5 +205,16 @@ export class GameDatabase extends EventEmitter {
 
     game.player1.player.sendResponse(response1);
     game.player2.player.sendResponse(response2);
+  }
+
+  removePlayer(player: PlayerInterface) {
+    this.users = this.users.filter((user) => user !== player);
+    this.rooms.forEach((room) => {
+      room.roomUsers = room.roomUsers.filter((roomUser) => roomUser !== player);
+    });
+
+    //TODO finishGame
+
+    this.emit('update_rooms');
   }
 }

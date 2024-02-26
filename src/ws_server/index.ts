@@ -44,6 +44,7 @@ export default function startWebSocketServer(port: number) {
         })
 
         ws.on('close', function close() {
+            gameDatabase.removePlayer(player);
             console.log('WebSocket connection closed');
         });
     })
