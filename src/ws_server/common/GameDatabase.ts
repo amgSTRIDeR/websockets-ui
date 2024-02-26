@@ -221,6 +221,11 @@ export class GameDatabase extends EventEmitter {
     game.player2.player.sendResponse(response);
   }
 
+  switchTurn(game: any) {
+    game.playersTurn = game.playersTurn === game.player1.id ? game.player2.id : game.player1.id;
+    this.sendTurnInfo(game);
+  }
+
   removePlayer(player: PlayerInterface) {
     this.users = this.users.filter((user) => user !== player);
 
