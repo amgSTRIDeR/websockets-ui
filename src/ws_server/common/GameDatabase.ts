@@ -4,6 +4,7 @@ import { showInfoMessage } from './consoleMessages';
 import { EventEmitter } from 'stream';
 import { WebSocket } from 'ws';
 import { PlayerInterface } from '..';
+import { AnySrvRecord } from 'dns';
 
 export interface CurrentUser {
   name: string;
@@ -27,7 +28,7 @@ export interface Room {
 export class GameDatabase extends EventEmitter {
   private static instance: GameDatabase | null = null;
   private users: PlayerInterface[] = [];
-  private winners: Winner[] = [{ name: 'test', wins: 0 }];
+  private winners: Winner[] = [];
   private rooms: Room[] = [];
   private games: any[] = [];
   private constructor() {
@@ -152,6 +153,7 @@ export class GameDatabase extends EventEmitter {
       idGame,
       player1: { id: idPlayer1, player: room.roomUsers[0] },
       player2: { id: idPlayer2, player: room.roomUsers[1] },
+      playersTurn: Math.random() > 0.5 ? idPlayer1 : idPlayer2,
     };
     this.games.push(game);
 
@@ -194,18 +196,29 @@ export class GameDatabase extends EventEmitter {
   startGame(game: any) {
     const response1 = {
       type: 'start_game',
-      data: JSON.stringify(game.player2.ships),
+      data: JSON.stringify({ships: game.player1.ships, currentPlayerIndex: game.player1.id}),
       id: 0,
     };
 
     const response2 = {
       type: 'start_game',
-      data: JSON.stringify(game.player1.ships),
+      data: JSON.stringify({ships: game.player2.ships, currentPlayerIndex: game.player2.id}),
       id: 0,
     };
 
     game.player1.player.sendResponse(response1);
     game.player2.player.sendResponse(response2);
+    this.sendTurnInfo(game);
+  }
+
+  sendTurnInfo(game: any) {
+    const response = {
+      type: 'turn',
+      data: JSON.stringify({ currentPlayer: game.playersTurn }),
+      id: 0,
+    };
+    game.player1.player.sendResponse(response);
+    game.player2.player.sendResponse(response);
   }
 
   removePlayer(player: PlayerInterface) {
