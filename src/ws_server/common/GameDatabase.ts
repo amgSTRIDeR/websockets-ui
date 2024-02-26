@@ -213,8 +213,39 @@ export class GameDatabase extends EventEmitter {
       room.roomUsers = room.roomUsers.filter((roomUser) => roomUser !== player);
     });
 
-    //TODO finishGame
+    this.games.forEach((game) => {
+      if (game.player1.player === player || game.player2.player === player) {
+        this.finishGame(game.idGame, player);
+      }
+    });
 
     this.emit('update_rooms');
+  }
+
+  finishGame(gameId: string, exitedPlayer?: PlayerInterface) {
+    const gameIndex = this.games.findIndex((game) => game.idGame === gameId);
+    if (gameIndex !== -1) {
+      let winnerId = '';
+      if (exitedPlayer) {
+        winnerId =
+          this.games[gameIndex].player1.id === exitedPlayer.index
+            ? this.games[gameIndex].player2.id
+            : this.games[gameIndex].player1.id;
+      } else {
+        if (this.games[gameIndex].player1.ships.length === 0) {
+          winnerId = this.games[gameIndex].player2.id;
+        } else {
+          winnerId = this.games[gameIndex].player1.id;
+        }
+      }
+        const response = {
+          type: 'finish',
+          data: JSON.stringify({ winPlayer: winnerId }),
+          id: 0,
+        };
+        this.games[gameIndex].player1.player.sendResponse(response);
+        this.games[gameIndex].player2.player.sendResponse(response);
+        this.games = this.games.filter((game) => game.idGame !== gameId);
+    }
   }
 }
