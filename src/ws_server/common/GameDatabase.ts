@@ -228,7 +228,7 @@ export class GameDatabase extends EventEmitter {
       let winnerId = '';
       if (exitedPlayer) {
         winnerId =
-          this.games[gameIndex].player1.id === exitedPlayer.index
+          this.games[gameIndex].player1.player === exitedPlayer
             ? this.games[gameIndex].player2.id
             : this.games[gameIndex].player1.id;
       } else {
