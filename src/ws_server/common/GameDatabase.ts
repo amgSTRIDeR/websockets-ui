@@ -209,9 +209,16 @@ export class GameDatabase extends EventEmitter {
 
   removePlayer(player: PlayerInterface) {
     this.users = this.users.filter((user) => user !== player);
-    this.rooms.forEach((room) => {
-      room.roomUsers = room.roomUsers.filter((roomUser) => roomUser !== player);
-    });
+
+    const roomWithPlayer = this.rooms.find((room) =>
+      room.roomUsers.some((roomUser) => roomUser === player)
+    );
+    if (roomWithPlayer) {
+      roomWithPlayer.roomUsers = roomWithPlayer.roomUsers.filter(
+        (roomUser) => roomUser !== player
+      );
+      this.emit('update_rooms');
+    }
 
     this.games.forEach((game) => {
       if (game.player1.player === player || game.player2.player === player) {
@@ -219,7 +226,6 @@ export class GameDatabase extends EventEmitter {
       }
     });
 
-    this.emit('update_rooms');
   }
 
   finishGame(gameId: string, exitedPlayer?: PlayerInterface) {

@@ -30,8 +30,10 @@ export default function startWebSocketServer(port: number) {
     const wss = new WebSocket.Server({ port });
     
     wss.on('connection', function connection(ws) {
+        console.log('WebSocket connection opened');
         const player = new Player('', '', '', ws);
         const listener = updateRooms.bind(null, ws);
+
         gameDatabase.on('update_rooms', listener);
         ws.on('message', function incoming(message) {
             const messageString = message.toString();
@@ -46,7 +48,7 @@ export default function startWebSocketServer(port: number) {
 
         ws.on('close', function close() {
             gameDatabase.removePlayer(player);
-            gameDatabase.off('update_rooms', listener);
+            gameDatabase.removeListener('update_rooms', listener);
             console.log('WebSocket connection closed');
         });
     })
