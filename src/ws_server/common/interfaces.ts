@@ -164,9 +164,14 @@ export interface FinishGameResponseMessage extends Message {
   };
 }
 
+export interface NeighborsCell {
+  x: number;
+  y: number;
+}
+
 export interface ShipOnField {
   hp: number;
-  neighborCells: {x: number, y:number}[]
+  neighborCells: NeighborsCell[];
 }
 
 export interface FieldCell {
@@ -177,4 +182,3 @@ export interface FieldCell {
 export interface Field {
   cells: FieldCell[][];
 }
-
