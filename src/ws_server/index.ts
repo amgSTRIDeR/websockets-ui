@@ -4,6 +4,7 @@ import { showReqMessage, showResMessage } from './common/consoleMessages';
 import { GameDatabase } from './common/GameDatabase';
 import { updateRooms } from './updateRooms';
 import { EventEmitter } from 'stream';
+import { sendWinners } from './sendWinners';
 
 const gameDatabase = GameDatabase.getInstance();
 
@@ -32,9 +33,11 @@ export default function startWebSocketServer(port: number) {
     wss.on('connection', function connection(ws) {
         console.log('WebSocket connection opened');
         const player = new Player('', '', '', ws);
-        const listener = updateRooms.bind(null, ws);
+        const updateRoomsListener = updateRooms.bind(null, ws);
+        const sendWinnersListener = sendWinners.bind(null, ws);
+        gameDatabase.on('update_rooms', updateRoomsListener);
+        gameDatabase.on('update_winners', sendWinnersListener);
 
-        gameDatabase.on('update_rooms', listener);
         ws.on('message', function incoming(message) {
             const messageString = message.toString();
             const messageObject = JSON.parse(messageString);
@@ -48,7 +51,8 @@ export default function startWebSocketServer(port: number) {
 
         ws.on('close', function close() {
             gameDatabase.removePlayer(player);
-            gameDatabase.removeListener('update_rooms', listener);
+            gameDatabase.removeListener('update_rooms', updateRoomsListener);
+            gameDatabase.removeListener('update_winners', sendWinnersListener);
             console.log('WebSocket connection closed');
         });
     })

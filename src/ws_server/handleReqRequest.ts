@@ -4,6 +4,7 @@ import { GameDatabase } from './common/GameDatabase';
 import { showResMessage } from './common/consoleMessages';
 import { updateRooms } from './updateRooms';
 import { PlayerInterface } from '.';
+import { sendWinners } from './sendWinners';
 
 const gameDatabase = GameDatabase.getInstance();
 
@@ -40,17 +41,8 @@ export function handleReqRequest(reqData: RegRequestData, ws: WebSocket, player:
   const regResponseMessage = JSON.stringify(reqResponseObject);
 
   ws.send(regResponseMessage);
-
-  const winnersString = JSON.stringify(gameDatabase.getWinners());
-  const winnersResponseObject = {
-    type: 'update_winners',
-    data: winnersString,
-    id: 0,
-  };
-  const winnersRes = JSON.stringify(winnersResponseObject);
-  showResMessage(winnersResponseObject);
-  ws.send(winnersRes);
-
+  sendWinners(ws);
+  
   showResMessage(reqResponseObject);
 
   updateRooms(ws);

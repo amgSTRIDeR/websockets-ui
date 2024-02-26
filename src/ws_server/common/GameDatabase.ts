@@ -74,16 +74,17 @@ export class GameDatabase extends EventEmitter {
     }
   }
 
-  addWinners(name: string) {
+  updateWinners(name: string) {
     const winner = this.winners.find((winner) => winner.name === name);
     if (winner) {
       winner.wins++;
     } else {
       this.winners.push({ name, wins: 1 });
     }
+    this.emit('update_winners');
   }
 
-  getWinners() {
+  getWinnersData() {
     return this.winners;
   }
 
@@ -232,16 +233,20 @@ export class GameDatabase extends EventEmitter {
     const gameIndex = this.games.findIndex((game) => game.idGame === gameId);
     if (gameIndex !== -1) {
       let winnerId = '';
+      let winnerName = '';
       if (exitedPlayer) {
-        winnerId =
-          this.games[gameIndex].player1.player === exitedPlayer
-            ? this.games[gameIndex].player2.id
-            : this.games[gameIndex].player1.id;
+        const winner = this.games[gameIndex].player1.player === exitedPlayer
+            ? this.games[gameIndex].player2
+            : this.games[gameIndex].player1;
+        winnerId = winner.id;
+        winnerName = winner.player.name;
       } else {
         if (this.games[gameIndex].player1.ships.length === 0) {
           winnerId = this.games[gameIndex].player2.id;
+          winnerName = this.games[gameIndex].player2.player.name;
         } else {
           winnerId = this.games[gameIndex].player1.id;
+          winnerName = this.games[gameIndex].player1.player.name;
         }
       }
         const response = {
@@ -252,6 +257,7 @@ export class GameDatabase extends EventEmitter {
         this.games[gameIndex].player1.player.sendResponse(response);
         this.games[gameIndex].player2.player.sendResponse(response);
         this.games = this.games.filter((game) => game.idGame !== gameId);
+        this.updateWinners(winnerName);
     }
   }
 }
