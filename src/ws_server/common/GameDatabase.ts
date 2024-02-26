@@ -5,6 +5,7 @@ import {
   Field,
   FieldCell,
   NeighborsCell,
+  RandomAttackData,
   RegRequestData,
   Ships,
 } from './interfaces';
@@ -372,6 +373,24 @@ export class GameDatabase extends EventEmitter {
         this.finishGame(game.idGame);
       }
     }
+  }
+
+  randomAttack( data: RandomAttackData) {
+    const game = this.games.find((game) => game.idGame === data.gameId)
+    const currentPlayer = game.player1.id === data.indexPlayer ? 'player1' : 'player2';
+    let position;
+    while (true) {
+      position = {
+        x: Math.floor(Math.random() * 10),
+        y: Math.floor(Math.random() * 10),
+      };
+      if (game[currentPlayer].field.cells[position.x][position.y].hit === false){
+        break;
+      }
+    }
+
+    this.attack({gameId: data.gameId, indexPlayer: data.indexPlayer, x: position.x, y: position.y});
+    
   }
 
   drawPlayersField(ships: Ships[]) {

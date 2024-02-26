@@ -4,6 +4,7 @@ import {
   AddUserToRoomData,
   AttackData,
   Message,
+  RandomAttackData,
   RegRequestData,
 } from './common/interfaces';
 import { handleReqRequest } from './handleReqRequest';
@@ -34,6 +35,9 @@ export default function handleRequest(
       break;
     case 'attack':
       gameDatabase.attack(<AttackData>JSON.parse(message.data));
+      break;
+    case 'randomAttack':
+      gameDatabase.randomAttack(<RandomAttackData>JSON.parse(message.data));
       break;
   }
 }

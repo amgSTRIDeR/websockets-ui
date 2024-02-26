@@ -136,14 +136,14 @@ export interface AttackResponseMessage extends Message {
   };
 }
 
+export interface RandomAttackData {
+  gameId: number | string;
+  indexPlayer: number | string;
+}
+
 export interface RandomAttackRequestMessage extends Message {
   type: 'randomAttack';
-  data: {
-    gameId: number | string;
-    indexPlayer:
-      | number
-      | string /* id of the player in the current game session */;
-  };
+  data: RandomAttackData
 }
 
 export interface PlayersTurnInfoResponseMessage extends Message {
