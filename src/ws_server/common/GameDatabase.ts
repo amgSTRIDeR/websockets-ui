@@ -324,9 +324,6 @@ export class GameDatabase extends EventEmitter {
             currentPlayerId
           );
           game[enemyPlayer].numberOfShipsOnWater--;
-          console.log('neighborCells', game[enemyPlayer].field.cells[data.x][
-            data.y
-          ].ship.neighborCells)
           game[enemyPlayer].field.cells[data.x][
             data.y
           ].ship.neighborCells.forEach((cell: NeighborsCell) => {
@@ -369,6 +366,10 @@ export class GameDatabase extends EventEmitter {
           currentPlayerId
         );
         this.switchTurn(game);
+      }
+
+      if(game[enemyPlayer].numberOfShipsOnWater === 0) {
+        this.finishGame(game.idGame);
       }
     }
   }
